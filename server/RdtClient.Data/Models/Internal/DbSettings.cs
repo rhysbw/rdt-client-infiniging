@@ -1,4 +1,4 @@
-﻿using RdtClient.Data.Enums;
+using RdtClient.Data.Enums;
 using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
@@ -226,6 +226,18 @@ or
 
     [DisplayName("Auto Import Defaults")]
     public DbSettingsDefaultsWithCategory Default { get; set; } = new();
+
+    [DisplayName("Fail on infringing")]
+    [Description("When Real-Debrid reports a torrent as infringing, virus, banned, deleted, or magnet_error, immediately fail the add request instead of queuing it. This allows Sonarr to blacklist the release and try another one.")]
+    public Boolean FailOnInfringing { get; set; } = true;
+
+    [DisplayName("Fail on uncached")]
+    [Description("When Real-Debrid reports a torrent as not_cached, immediately fail the add request instead of queuing it. Only enable this if you want to avoid uncached torrents entirely.")]
+    public Boolean FailOnUncached { get; set; } = false;
+
+    [DisplayName("Add check timeout (ms)")]
+    [Description("How long to wait synchronously for initial Real-Debrid status before deciding whether to fail fast or proceed. Higher values may catch more status changes but will slow down the add request.")]
+    public Int32 AddCheckTimeoutMs { get; set; } = 4000;
 }
 
 public class DbSettingsIntegrations

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PremiumizeNET;
@@ -133,6 +133,11 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
     public async Task Delete(String id)
     {
         await GetClient().Transfers.DeleteAsync(id);
+    }
+
+    public async Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        await GetClient().Transfers.DeleteAsync(torrentId, cancellationToken);
     }
 
     public Task<String> Unrestrict(String link)
@@ -326,5 +331,18 @@ public class PremiumizeTorrentClient(ILogger<PremiumizeTorrentClient> logger, IH
         }
 
         logger.LogDebug(message);
+    }
+
+    public async Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var torrents = await GetTorrents();
+            return torrents.FirstOrDefault(t => t.Id == torrentId);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

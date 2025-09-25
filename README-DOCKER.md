@@ -87,6 +87,9 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e TZ=Europe/London` | Specify a timezone to use EG Europe/London. |
+| `-e RDT_DEBRID_FAIL_ON_INFRINGING=true` | Enable fail-fast on infringing torrents (default: true) |
+| `-e RDT_DEBRID_FAIL_ON_UNCACHED=false` | Enable fail-fast on uncached torrents (default: false) |
+| `-e RDT_DEBRID_ADD_CHECK_TIMEOUT_MS=4000` | Timeout in ms for initial status check (default: 4000) |
 | `-v /data/db` | App data. |
 | `-v /data/downloads` | Location of downloads on disk. |
 

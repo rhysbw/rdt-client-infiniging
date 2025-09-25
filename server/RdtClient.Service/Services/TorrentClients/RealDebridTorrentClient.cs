@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RDNET;
@@ -189,6 +189,11 @@ public class RealDebridTorrentClient(ILogger<RealDebridTorrentClient> logger, IH
         await GetClient().Torrents.DeleteAsync(torrentId);
     }
 
+    public async Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        await GetClient().Torrents.DeleteAsync(torrentId, cancellationToken);
+    }
+
     public async Task<String> Unrestrict(String link)
     {
         var result = await GetClient().Unrestrict.LinkAsync(link);
@@ -376,6 +381,19 @@ public class RealDebridTorrentClient(ILogger<RealDebridTorrentClient> logger, IH
         var result = await GetClient().Torrents.GetInfoAsync(torrentId);
 
         return Map(result);
+    }
+
+    public async Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await GetClient().Torrents.GetInfoAsync(torrentId, cancellationToken);
+            return Map(result);
+        }
+        catch (Exception ex) when (ex.Message == "Resource not found")
+        {
+            return null;
+        }
     }
 
     private void Log(String message, Data.Models.Data.Torrent? torrent = null)

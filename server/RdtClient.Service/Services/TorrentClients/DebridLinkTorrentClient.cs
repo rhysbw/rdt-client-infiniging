@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using DebridLinkFrNET; 
@@ -146,6 +146,11 @@ public class DebridLinkClient(ILogger<DebridLinkClient> logger, IHttpClientFacto
     public async Task Delete(String torrentId)
     {
         await GetClient().Seedbox.DeleteAsync(torrentId);
+    }
+
+    public async Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        await GetClient().Seedbox.DeleteAsync(torrentId, cancellationToken);
     }
 
     public Task<String> Unrestrict(String link)
@@ -300,5 +305,18 @@ public class DebridLinkClient(ILogger<DebridLinkClient> logger, IHttpClientFacto
         }
 
         return Path.Combine(torrent.RdName, download.FileName);
+    }
+
+    public async Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var torrents = await GetTorrents();
+            return torrents.FirstOrDefault(t => t.Id == torrentId);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -1,8 +1,9 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonoTorrent;
 using RdtClient.Data.Models.TorrentClient;
+using RdtClient.Service.Exceptions;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services;
 using Torrent = RdtClient.Data.Models.Data.Torrent;
@@ -84,9 +85,21 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
 
         var bytes = memoryStream.ToArray();
 
-        await torrents.AddFileToDebridQueue(bytes, formData.Torrent);
-
-        return Ok();
+        try
+        {
+            await torrents.AddFileToDebridQueue(bytes, formData.Torrent);
+            return Ok();
+        }
+        catch (RealDebridFailFastException ex)
+        {
+            logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
+            return Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Download client rejected release",
+                detail: ex.Message,
+                extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
+            );
+        }
     }
 
     [HttpPost]
@@ -110,9 +123,21 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
 
         logger.LogDebug($"Add magnet");
 
-        await torrents.AddMagnetToDebridQueue(request.MagnetLink, request.Torrent);
-
-        return Ok();
+        try
+        {
+            await torrents.AddMagnetToDebridQueue(request.MagnetLink, request.Torrent);
+            return Ok();
+        }
+        catch (RealDebridFailFastException ex)
+        {
+            logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
+            return Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Download client rejected release",
+                detail: ex.Message,
+                extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
+            );
+        }
     }
 
     [HttpPost]

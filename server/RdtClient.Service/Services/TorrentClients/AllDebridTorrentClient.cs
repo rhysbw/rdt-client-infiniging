@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AllDebridNET;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -164,6 +164,11 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
     public async Task Delete(String torrentId)
     {
         await allDebridNetClientFactory.GetClient().Magnet.DeleteAsync(torrentId);
+    }
+
+    public async Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        await allDebridNetClientFactory.GetClient().Magnet.DeleteAsync(torrentId, cancellationToken);
     }
 
     public async Task<String> Unrestrict(String link)
@@ -353,5 +358,18 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         }
 
         return Path.Combine(directory, matchingTorrentFiles[0].Path);
+    }
+
+    public async Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var torrents = await GetTorrents();
+            return torrents.FirstOrDefault(t => t.Id == torrentId);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
