@@ -94,8 +94,8 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         {
             logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
             return Problem(
-                statusCode: StatusCodes.Status409Conflict,
-                title: "Download client rejected release",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Download client temporarily unavailable",
                 detail: ex.Message,
                 extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
             );
@@ -132,8 +132,8 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         {
             logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
             return Problem(
-                statusCode: StatusCodes.Status409Conflict,
-                title: "Download client rejected release",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Download client temporarily unavailable",
                 detail: ex.Message,
                 extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
             );
