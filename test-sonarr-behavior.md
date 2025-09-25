@@ -2,12 +2,12 @@
 
 ## Test Scenario: HTTP Status Code Impact on Sonarr
 
-This document outlines how to test that Sonarr properly falls back to the next download client when RdtClient returns HTTP 503 (Service Unavailable) for infringing torrents.
+This document outlines how to test that Sonarr properly falls back to the next download client when RdtClient returns HTTP 400 (Bad Request) for infringing torrents, matching qBittorrent's API behavior.
 
 ## Expected Sonarr Behavior
 
-### HTTP 503 (Service Unavailable) - ✅ CORRECT
-- **Sonarr Response**: "Download client temporarily unavailable"
+### HTTP 400 (Bad Request) - ✅ CORRECT
+- **Sonarr Response**: "Failed to add torrent"
 - **Action**: Try the same release with the next download client in priority list
 - **Result**: Sonarr attempts qBittorrent (or next client) for the same release
 
@@ -41,10 +41,10 @@ In RdtClient Settings > Provider:
 
 ### 3. Test Scenarios
 
-#### Test 1: Infringing Torrent (Should Return HTTP 503)
+#### Test 1: Infringing Torrent (Should Return HTTP 400)
 1. Find a torrent that Real-Debrid will flag as infringing
 2. Add it to Sonarr
-3. **Expected**: RdtClient returns HTTP 503, Sonarr tries qBittorrent for same release
+3. **Expected**: RdtClient returns HTTP 400, Sonarr tries qBittorrent for same release
 
 #### Test 2: Valid Torrent (Should Return HTTP 200)
 1. Find a torrent that Real-Debrid accepts
@@ -55,14 +55,14 @@ In RdtClient Settings > Provider:
 1. Find a torrent that's not cached on Real-Debrid
 2. Add it to Sonarr
 3. **If Fail on uncached = false**: RdtClient returns HTTP 200, torrent queues
-4. **If Fail on uncached = true**: RdtClient returns HTTP 503, Sonarr tries qBittorrent
+4. **If Fail on uncached = true**: RdtClient returns HTTP 400, Sonarr tries qBittorrent
 
 ## Verification Steps
 
 ### Check Sonarr Activity Tab
 1. Go to Sonarr > Activity
 2. Look for the test torrent
-3. **HTTP 503 Response**: Should show "Download client temporarily unavailable"
+3. **HTTP 400 Response**: Should show "Failed to add torrent"
 4. **HTTP 200 Response**: Should show normal processing
 
 ### Check Download Client Status
@@ -73,12 +73,12 @@ In RdtClient Settings > Provider:
 ### Check qBittorrent
 1. Open qBittorrent web interface
 2. Look for the torrent that was rejected by RdtClient
-3. Should appear in qBittorrent's queue if HTTP 503 was returned
+3. Should appear in qBittorrent's queue if HTTP 400 was returned
 
 ## Troubleshooting
 
 ### If Sonarr Blacklists Instead of Trying Next Client
-- **Problem**: RdtClient is returning HTTP 409 instead of HTTP 503
+- **Problem**: RdtClient is returning HTTP 409 instead of HTTP 400
 - **Solution**: Check RdtClient logs, ensure fail-fast is properly configured
 
 ### If No Fallback Happens
@@ -109,7 +109,7 @@ Look for these log entries:
 ## Success Criteria
 
 ✅ **Test Passes When**:
-- RdtClient returns HTTP 503 for infringing torrents
+- RdtClient returns HTTP 400 for infringing torrents (matching qBittorrent behavior)
 - Sonarr tries qBittorrent for the same release (not a different release)
 - No blacklisting occurs for the release
 - Valid torrents still work normally through RdtClient

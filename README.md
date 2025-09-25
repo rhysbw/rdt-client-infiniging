@@ -194,7 +194,7 @@ Notice: the progress and ETA reported in Sonarr's Activity tab will not be accur
 
 ### Fail-Fast on Infringing Torrents
 
-RdtClient now supports fail-fast detection of infringing torrents from Real-Debrid. When enabled, if Real-Debrid reports a torrent as infringing, virus, banned, deleted, or magnet_error, RdtClient will immediately reject the add request with an HTTP 503 (Service Unavailable) error. This signals to Sonarr that the download client is temporarily unavailable, causing Sonarr to try the next download client in its priority list instead of blacklisting the release.
+RdtClient now supports fail-fast detection of infringing torrents from Real-Debrid. When enabled, if Real-Debrid reports a torrent as infringing, virus, banned, deleted, or magnet_error, RdtClient will immediately reject the add request with an HTTP 400 (Bad Request) error, matching qBittorrent's API behavior. This causes Sonarr to try the next download client in its priority list instead of blacklisting the release.
 
 #### Configuration
 
@@ -221,15 +221,15 @@ environment:
 2. RdtClient then polls Real-Debrid's API for the initial status within the configured timeout
 3. If a fatal status is detected (infringing, virus, etc.), RdtClient:
    - Immediately deletes the torrent from Real-Debrid (best effort)
-   - Returns HTTP 503 Service Unavailable to Sonarr with error details
-   - Sonarr sees this as "Download client temporarily unavailable" and tries the next download client
+   - Returns HTTP 400 Bad Request to Sonarr with error details (same as qBittorrent)
+   - Sonarr sees this as "Failed to add torrent" and tries the next download client
    - Sonarr automatically tries the same release with the next download client in its priority list
 
 #### Benefits
 
 - **Faster retries**: Sonarr can immediately try the same release with the next download client instead of waiting for background processing
 - **Better reliability**: Infringing torrents are caught early and don't consume resources
-- **Automatic fallback**: Sonarr automatically tries the next download client in its priority list (e.g., qBittorrent) when RdtClient reports service unavailable
+- **Automatic fallback**: Sonarr automatically tries the next download client in its priority list (e.g., qBittorrent) when RdtClient fails to add the torrent
 
 ### Running within a folder
 

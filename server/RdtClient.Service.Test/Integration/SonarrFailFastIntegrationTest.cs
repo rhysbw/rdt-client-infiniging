@@ -46,7 +46,7 @@ public class SonarrFailFastIntegrationTest : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task UploadMagnet_WhenRealDebridReportsInfringing_ShouldReturn503ServiceUnavailable()
+    public async Task UploadMagnet_WhenRealDebridReportsInfringing_ShouldReturn400BadRequest()
     {
         // Arrange
         var request = new
@@ -66,19 +66,15 @@ public class SonarrFailFastIntegrationTest : IClassFixture<WebApplicationFactory
         var response = await _client.PostAsync("/Api/Torrents/UploadMagnet", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         
         var responseContent = await response.Content.ReadAsStringAsync();
-        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseContent);
-        
-        Assert.NotNull(problemDetails);
-        Assert.Equal(503, problemDetails.Status);
-        Assert.Equal("Download client temporarily unavailable", problemDetails.Title);
-        Assert.Contains("Real-Debrid rejected this torrent as infringing", problemDetails.Detail);
+        Assert.Contains("Failed to add torrent", responseContent);
+        Assert.Contains("Real-Debrid rejected this torrent as infringing", responseContent);
     }
 
     [Fact]
-    public async Task UploadFile_WhenRealDebridReportsVirus_ShouldReturn503ServiceUnavailable()
+    public async Task UploadFile_WhenRealDebridReportsVirus_ShouldReturn400BadRequest()
     {
         // Arrange
         var formData = new MultipartFormDataContent();
@@ -105,18 +101,14 @@ public class SonarrFailFastIntegrationTest : IClassFixture<WebApplicationFactory
         var response = await _client.PostAsync("/Api/Torrents/UploadFile", formData);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         
         var responseContent = await response.Content.ReadAsStringAsync();
-        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseContent);
-        
-        Assert.NotNull(problemDetails);
-        Assert.Equal(503, problemDetails.Status);
-        Assert.Equal("Download client temporarily unavailable", problemDetails.Title);
+        Assert.Contains("Failed to add torrent", responseContent);
     }
 
     [Fact]
-    public async Task UploadMagnet_WhenRealDebridReportsNotCached_ShouldReturn503ServiceUnavailable()
+    public async Task UploadMagnet_WhenRealDebridReportsNotCached_ShouldReturn400BadRequest()
     {
         // Arrange - Update the mock to return not_cached status
         var factory = _factory.WithWebHostBuilder(builder =>
@@ -151,7 +143,7 @@ public class SonarrFailFastIntegrationTest : IClassFixture<WebApplicationFactory
         var response = await client.PostAsync("/Api/Torrents/UploadMagnet", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

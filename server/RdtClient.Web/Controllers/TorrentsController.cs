@@ -93,12 +93,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         catch (RealDebridFailFastException ex)
         {
             logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
-            return Problem(
-                statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "Download client temporarily unavailable",
-                detail: ex.Message,
-                extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
-            );
+            return BadRequest($"Failed to add torrent: {ex.Message}");
         }
     }
 
@@ -131,12 +126,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         catch (RealDebridFailFastException ex)
         {
             logger.LogWarning("Fail-fast RD rejection: {Reason}", ex.Status);
-            return Problem(
-                statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "Download client temporarily unavailable",
-                detail: ex.Message,
-                extensions: new Dictionary<string, object?> { ["error"] = ex.Status }
-            );
+            return BadRequest($"Failed to add torrent: {ex.Message}");
         }
     }
 

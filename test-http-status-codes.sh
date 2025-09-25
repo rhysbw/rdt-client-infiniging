@@ -27,9 +27,9 @@ curl -X POST "$RDT_CLIENT_URL/Api/Torrents/UploadMagnet" \
   -s
 
 echo ""
-echo "Test 2: Infringing Torrent (Should return HTTP 503)"
+echo "Test 2: Infringing Torrent (Should return HTTP 400)"
 echo "---------------------------------------------------"
-# Note: This will only return 503 if Real-Debrid actually reports infringing
+# Note: This will only return 400 if Real-Debrid actually reports infringing
 # In a real test, you'd need a torrent that RD flags as infringing
 curl -X POST "$RDT_CLIENT_URL/Api/Torrents/UploadMagnet" \
   -H "Content-Type: application/json" \
@@ -47,7 +47,7 @@ curl -X POST "$RDT_CLIENT_URL/Api/Torrents/UploadMagnet" \
 echo ""
 echo "Expected Results:"
 echo "- HTTP 200: Sonarr will process the torrent normally"
-echo "- HTTP 503: Sonarr will try the next download client (qBittorrent)"
+echo "- HTTP 400: Sonarr will try the next download client (qBittorrent) - matches qBittorrent API behavior"
 echo "- HTTP 409: Sonarr will blacklist the release (WRONG BEHAVIOR)"
 echo ""
 echo "Check Sonarr Activity tab to verify behavior!"
