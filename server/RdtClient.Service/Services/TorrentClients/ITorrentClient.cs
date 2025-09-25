@@ -1,4 +1,4 @@
-﻿using RdtClient.Data.Models.Data;
+using RdtClient.Data.Models.Data;
 using RdtClient.Data.Models.TorrentClient;
 
 namespace RdtClient.Service.Services.TorrentClients;
@@ -20,6 +20,7 @@ public interface ITorrentClient
     /// <returns>Number of files selected</returns>
     Task<Int32?> SelectFiles(Torrent torrent);
     Task Delete(String torrentId);
+    Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default);
     Task<String> Unrestrict(String link);
     Task<Torrent> UpdateData(Torrent torrent, TorrentClientTorrent? torrentClientTorrent);
     Task<IList<DownloadInfo>?> GetDownloadInfos(Torrent torrent);
@@ -30,4 +31,11 @@ public interface ITorrentClient
     /// <param name="download">The download to get the filename of</param>
     /// <returns>The filename of the download</returns>
     Task<String> GetFileName(Download download);
+    /// <summary>
+    /// Gets detailed information about a specific torrent
+    /// </summary>
+    /// <param name="torrentId">The torrent ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Torrent information or null if not found</returns>
+    Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default);
 }

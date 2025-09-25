@@ -1,4 +1,4 @@
-﻿using System.IO.Abstractions;
+using System.IO.Abstractions;
 using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
@@ -35,6 +35,7 @@ public static class DiConfig
         services.AddScoped<QBittorrent>();
         services.AddScoped<RemoteService>();
         services.AddScoped<RealDebridTorrentClient>();
+        services.AddScoped<RealDebridAddVerifier>();
         services.AddScoped<Settings>();
         services.AddScoped<TorBoxTorrentClient>();
         services.AddScoped<Torrents>();

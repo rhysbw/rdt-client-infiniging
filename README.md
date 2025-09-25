@@ -192,6 +192,45 @@ When downloading files it will append the `category` setting in the Sonarr/Radar
 
 Notice: the progress and ETA reported in Sonarr's Activity tab will not be accurate, but it will report the torrent as completed so it can be processed after it is done downloading.
 
+### Fail-Fast on Infringing Torrents
+
+RdtClient now supports fail-fast detection of infringing torrents from Real-Debrid. When enabled, if Real-Debrid reports a torrent as infringing, virus, banned, deleted, or magnet_error, RdtClient will immediately reject the add request with an HTTP 400 (Bad Request) error, matching qBittorrent's API behavior. This causes Sonarr to try the next download client in its priority list instead of blacklisting the release.
+
+#### Configuration
+
+You can configure this behavior in the web interface under **Settings > Provider**:
+
+- **Fail on infringing**: When Real-Debrid reports a torrent as infringing, virus, banned, deleted, or magnet_error, immediately fail the add request instead of queuing it. This allows Sonarr to blacklist the release and try another one. (Default: enabled)
+- **Fail on uncached**: When Real-Debrid reports a torrent as not_cached, immediately fail the add request instead of queuing it. Only enable this if you want to avoid uncached torrents entirely. (Default: disabled)
+- **Add check timeout (ms)**: How long to wait synchronously for initial Real-Debrid status before deciding whether to fail fast or proceed. Higher values may catch more status changes but will slow down the add request. (Default: 4000ms)
+
+#### Docker Environment Variables
+
+When running in Docker, you can also configure these settings using environment variables:
+
+```yaml
+environment:
+  - RDT_DEBRID_FAIL_ON_INFRINGING=true
+  - RDT_DEBRID_FAIL_ON_UNCACHED=false
+  - RDT_DEBRID_ADD_CHECK_TIMEOUT_MS=4000
+```
+
+#### How it works
+
+1. When Sonarr sends a torrent to RdtClient, RdtClient forwards it to Real-Debrid
+2. RdtClient then polls Real-Debrid's API for the initial status within the configured timeout
+3. If a fatal status is detected (infringing, virus, etc.), RdtClient:
+   - Immediately deletes the torrent from Real-Debrid (best effort)
+   - Returns HTTP 400 Bad Request to Sonarr with error details (same as qBittorrent)
+   - Sonarr sees this as "Failed to add torrent" and tries the next download client
+   - Sonarr automatically tries the same release with the next download client in its priority list
+
+#### Benefits
+
+- **Faster retries**: Sonarr can immediately try the same release with the next download client instead of waiting for background processing
+- **Better reliability**: Infringing torrents are caught early and don't consume resources
+- **Automatic fallback**: Sonarr automatically tries the next download client in its priority list (e.g., qBittorrent) when RdtClient fails to add the torrent
+
 ### Running within a folder
 
 By default the application runs in the root of your hosted address (i.e. https://rdt.myserver.com/), but if you want to run it as a relative folder (i.e. https://myserver.com/rdt) you will have to change the `BasePath` setting in the `appsettings.json` file. You can set the `BASE_PATH` environment variable for docker enviroments.

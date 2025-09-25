@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
@@ -29,7 +29,8 @@ public class Torrents(
     PremiumizeTorrentClient premiumizeTorrentClient,
     RealDebridTorrentClient realDebridTorrentClient,
     DebridLinkClient debridLinkClient,
-    TorBoxTorrentClient torBoxTorrentClient)
+    TorBoxTorrentClient torBoxTorrentClient,
+    RealDebridAddVerifier realDebridAddVerifier)
 {
     private static readonly SemaphoreSlim RealDebridUpdateLock = new(1, 1);
 
@@ -302,6 +303,12 @@ public class Torrents(
             var id = torrent.IsFile
                 ? await TorrentClient.AddFile(Convert.FromBase64String(torrent.FileOrMagnet))
                 : await TorrentClient.AddMagnet(torrent.FileOrMagnet);
+
+            // For Real-Debrid, verify initial status to fail fast on infringing torrents
+            if (Settings.Get.Provider.Provider == Provider.RealDebrid)
+            {
+                await realDebridAddVerifier.VerifyInitialStatusOrThrowAsync(id);
+            }
 
             await torrentData.UpdateRdId(torrent, id);
 

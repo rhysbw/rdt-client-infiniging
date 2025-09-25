@@ -178,6 +178,11 @@ public class TorBoxTorrentClient(ILogger<TorBoxTorrentClient> logger, IHttpClien
         await GetClient().Torrents.ControlAsync(torrentId, "delete");
     }
 
+    public async Task DeleteAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        await GetClient().Torrents.ControlAsync(torrentId, "delete", cancellationToken);
+    }
+
     public async Task<String> Unrestrict(String link)
     {
         var segments = link.Split('/');
@@ -382,5 +387,18 @@ public class TorBoxTorrentClient(ILogger<TorBoxTorrentClient> logger, IHttpClien
         }
 
         logger.LogDebug(message);
+    }
+
+    public async Task<TorrentClientTorrent?> GetTorrentInfoAsync(String torrentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var torrents = await GetTorrents();
+            return torrents.FirstOrDefault(t => t.Id == torrentId);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
